@@ -1,0 +1,13 @@
+{
+    "name": "plotbot",
+    "description": "A discord bot enabling users to create value over time graphs by adding plot points.",
+    "version": "0.0.1",
+    "main": "bot.js",
+    "scripts": {
+        "start": "node bot.js"
+    },
+    "dependencies": {
+        "discord.js": "12.2.0",
+        "request": "2.88.2"
+    }
+}
