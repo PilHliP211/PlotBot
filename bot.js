@@ -1,5 +1,11 @@
 const fs = require('fs');
 const moment = require('moment');
+const fetch = require("node-fetch");
+const d3 = require('d3');
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+
+
 const Discord = require('discord.js');
 
 const client = new Discord.Client();
@@ -26,27 +32,30 @@ client.on('message', message => {
         message.reply(moment().format());
     }
 
-    if(message.content.startsWith('get latest')) {
+    if (message.content.startsWith('get latest')) {
         message.reply(printPlotPoint(getLatest()));
     }
 
-    if(message.content.startsWith('help')) {
+    if (message.content.startsWith('help')) {
         message.reply(getHelp());
 
     }
 
-    if(message.content.startsWith('add')) {
-        if(addPoint(message) < 0)
+    if (message.content.startsWith('add')) {
+        if (addPoint(message) < 0)
             message.reply("I ran into some trouble adding this plot point. :frowning:");
         else
             message.reply("Done and done. :sunglasses:");
+    }
+    if (message.content.startsWith('plot')) {
+        plot();
     }
 
 });
 
 client.login(process.env.BOT_TOKEN);
 
-function getHelp(){
+function getHelp() {
     var helpText;
     helpText += "Hey there! My name is PlotBot! :sunglasses:\n";
     helpText += "I'm a discord bot that helps users plot and track values and trends over time.\n";
@@ -56,7 +65,7 @@ function getHelp(){
     helpText += "You can also specify other users by @-ing them after you specify the value to plot for them:\n";
     helpText += "`@PlotBot add 124 @userName`\n";
     helpText += "This will create a plot point for their user with value of 124 for this instance in time.\n";
-    
+
     // no ability to specify custom moments for now.
     /*
     helpText += "Finally, you can specify a point in time other than right now by specifying a date and time string after the user:\n";
@@ -85,24 +94,23 @@ function addPoint(message) {
     // add int string moment
 
     var msgCmd = message.content.split(' ');
-    var value  = parseInt(msgCmd[1]);
-    if(!value) return -1;
+    var value = parseInt(msgCmd[1]);
+    if (!value) return -1;
 
     var user;
     var aMoment;
     if (msgCmd.length > 2)
-        user = msgCmd[2].substring(msgCmd[2].indexOf('<@!')+3, msgCmd[2].length - 1);
+        user = msgCmd[2].substring(msgCmd[2].indexOf('<@!') + 3, msgCmd[2].length - 1);
     else
         user = message.author.id;
-    
-    if (msgCmd.length > 3)
-    {
+
+    if (msgCmd.length > 3) {
         // no ability to specify custom moments for now.
         /*
         var momentStr = message.content.slice(message.content.indexOf(user) + user.length);
         aMoment = moment(momentStr);
         */
-       aMoment = moment();
+        aMoment = moment();
     }
     else
         aMoment = moment();
@@ -121,17 +129,16 @@ function add(user, value, moment) {
 }
 
 
-function getLatest(message){
+function getLatest(message) {
     sortByTime();
     return points[0];
 }
 
-function sortByTime()
-{
+function sortByTime() {
     points.sort((a, b) => (moment(a.moment).isBefore(moment(b.moment))) ? 1 : -1)
 }
 
-function printPlotPoint(plotpoint){
+function printPlotPoint(plotpoint) {
     var output = "";
     output += "User: " + '<@' + plotpoint.user + '>' + '\n';
     output += "```";
@@ -140,17 +147,37 @@ function printPlotPoint(plotpoint){
     output += "Time: " + time.format() + '\n';
 
     return output + "```";
-    
+
 }
 
+function plot() {
+
+    var document = new JSDOM(),
+        svg = d3.select(document.body).append("svg");
+    var json = {"my": "json"};
+    
+    d3.json(json).then( function (data) {
+        console.log('starting');
+        console.log(data);
+    });
+
+    console.log('done');
+}
+
+
 function loadData() {
-    var plotFile = fs.readFileSync('plots.json',"utf8");
+    var plotFile = fs.readFileSync('plots.json', "utf8");
 
     return JSON.parse(plotFile);
 }
 
 function writeData() {
+    var data = getPoints();
+    fs.writeFileSync('plots.json', JSON.stringify(data));
+}
+
+function getPoints(){
     var data = {}
     data.points = points;
-    fs.writeFileSync('plots.json',JSON.stringify(data));
+    return data;
 }
