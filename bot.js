@@ -4,6 +4,8 @@ const Discord = require('discord.js');
 
 const client = new Discord.Client();
 
+moment.defaultFormat = 'dddd, MMMM Do YYYY, h:mm:ss a';
+
 var points;
 
 client.on('ready', () => {
@@ -55,10 +57,13 @@ function getHelp(){
     helpText += "`@PlotBot add 124 @userName`\n";
     helpText += "This will create a plot point for their user with value of 124 for this instance in time.\n";
     
+    // no ability to specify custom moments for now.
+    /*
     helpText += "Finally, you can specify a point in time other than right now by specifying a date and time string after the user:\n";
     helpText += "`@PlotBot add 394 @userName May 4th 2020 3:30pm`\n";
     helpText += "This will create a plot point for that user with value of 394 on May 4th at 3:30.\n";
     helpText += "If you want to specify a plot for your own graph but at a different time, just @ your own user.\n";
+    */
 
     helpText += "Now that you have given me some data, I can do some cool stuff with it: \n";
     helpText += "`@PlotBot graph week`\n";
@@ -92,8 +97,12 @@ function addPoint(message) {
     
     if (msgCmd.length > 3)
     {
+        // no ability to specify custom moments for now.
+        /*
         var momentStr = message.content.slice(message.content.indexOf(user) + user.length);
         aMoment = moment(momentStr);
+        */
+       aMoment = moment();
     }
     else
         aMoment = moment();
@@ -123,8 +132,9 @@ function sortByTime()
 }
 
 function printPlotPoint(plotpoint){
-    var output = "```";
-    output += "User: " + plotpoint.user + '\n';
+    var output = "";
+    output += "User: " + '<@' + plotpoint.user + '>' + '\n';
+    output += "```";
     output += "Value: " + plotpoint.value + '\n';
     var time = moment(plotpoint.moment);
     output += "Time: " + time.format() + '\n';
