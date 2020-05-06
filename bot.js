@@ -1,10 +1,9 @@
 const fs = require('fs');
 const moment = require('moment');
-const fetch = require("node-fetch");
-const d3 = require('d3');
-const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
-
+/*const output = require('d3node-output');
+const d3 = require('d3-node')().d3;
+const d3nLine = require('d3node-linechart');
+*/
 
 const Discord = require('discord.js');
 
@@ -17,9 +16,11 @@ var points;
 client.on('ready', () => {
     var data = loadData();
     points = data.points;
+    sortByTime();
     console.log("There are currently " + points.length + " plotted points.");
     console.log(moment().format());
     console.log('I am ready!');
+    plot();
 });
 
 client.on('message', message => {
@@ -38,7 +39,6 @@ client.on('message', message => {
 
     if (message.content.startsWith('help')) {
         message.reply(getHelp());
-
     }
 
     if (message.content.startsWith('add')) {
@@ -49,6 +49,9 @@ client.on('message', message => {
     }
     if (message.content.startsWith('plot')) {
         plot();
+    }
+    if (message.content.startsWith('test')) {
+        tester();
     }
 
 });
@@ -151,23 +154,64 @@ function printPlotPoint(plotpoint) {
 }
 
 function plot() {
+    require('./plotVega');
+    return;
+    //const parseTime = d3.timeParse('%d-%b-%y');
+    const tsvString = pointArrToTsvString();
 
-    var document = new JSDOM(),
-        svg = d3.select(document.body).append("svg");
-    var json = {"my": "json"};
-    
-    d3.json(json).then( function (data) {
-        console.log('starting');
-        console.log(data);
+    var plotline = require('../PlotBot/plotline')
+    plotline.plot(tsvString);
+
+    var data = d3.tsvParse(tsvString, d => {
+        return {
+            key: parseTime(d.moment),
+            value: +d.close
+        };
     });
+    console.log(data);
+    data = createLines(["459397934136688650"],moment().subtract(1, 'week'));
+    console.log(data);
+    // create output files
+    d3.line().x(d => 
+        moment(d).format("MM/DD/YYYY a"));
+    var line = d3nLine({
+        data: data,
+        lineColors: ["steelblue"],
+        container: `<div id="container"><h2>Multiline Example</h2><div id="chart"></div></div>`,
+        width: 800,
+        height: 570,
+    });
+    line.d3.line().x(d => {
+        moment(d).format("MM/DD/YYYY a");
+        console.log(d);
+    });
+    output('./outputs/output', line);
 
+    /*
+    const canvasModule = require('canvas');
+    var d3n = new D3Node({ canvasModule });
+    d3n.json(json);
+    const canvas = d3n.createCanvas(960, 500);
+    const context = canvas.getContext('2d');
+    // draw on your canvas, then output canvas to png
+    canvas.pngStream().pipe(fs.createWriteStream('output.png'));
+    */
+    /*
+        var document = new JSDOM(),
+            svg = d3.select(document.body).append("svg");
+        var json = {"my": "json"};
+        
+        d3.json(json).then( function (data) {
+            console.log('starting');
+            console.log(data);
+        });
+    */
     console.log('done');
 }
 
 
 function loadData() {
     var plotFile = fs.readFileSync('plots.json', "utf8");
-
     return JSON.parse(plotFile);
 }
 
@@ -176,8 +220,86 @@ function writeData() {
     fs.writeFileSync('plots.json', JSON.stringify(data));
 }
 
-function getPoints(){
+function getPoints() {
     var data = {}
     data.points = points;
     return data;
+}
+
+function pointArrToTsvString() {
+
+    var tsvString = "user\tvalue\tmoment\n";
+
+    points.forEach(point => {
+        tsvString += point.user + '\t' + point.value + '\t' + point.moment + '\n';
+    });
+
+    return tsvString;
+}
+
+/**
+ * Takes an Array of users and a moment in the past and generates line data as an array.
+ * @param {array} userArr an Array of user IDs.
+ * @param {moment} aMoment a moment occuring in the past.
+ */
+function createLines(userArr, aMoment) {
+    var now = moment().minutes(0).seconds(0).milliseconds(0);
+    aMoment = aMoment.minutes(0).seconds(0).milliseconds(0);
+    const data = [];
+    // TODO: this format is probably invalid..
+    //const parseTime = d3.timeParse(moment.defaultFormat);
+
+    userArr.forEach(user => {
+        const thisUsersRelevantPoints = points.filter(point =>
+            point.user == user && moment(point.moment).isSameOrAfter(aMoment)
+        );
+        var linePoints = [];
+        thisUsersRelevantPoints.forEach(item => {
+            linePoints.push(
+                {
+                    key: moment(item.moment).minutes(0).seconds(0).milliseconds(0).format("MM/DD/YYYY a"),
+                    value: parseInt(item.value)
+                }
+            )
+        });
+        data.push(linePoints);
+    });
+
+    data.allKeys = Array.from(getAllMomentsAsStrings(aMoment, now, 'hours'));
+
+    return data;
+}
+
+/**
+ * retruns an array of all moments between two moments at a certain periodic interval
+ * @param {moment} startMoment the lower bound moment
+ * @param {moment} endMoment the upper bound moment
+ * @param {character} interval either hours or days
+ */
+function getAllMomentsAsStrings(startMoment, endMoment, interval) {
+    var moments = [];
+    var intervals = endMoment.diff(startMoment, interval);
+
+    for(var i = 0; i < intervals; i++)
+    {
+        moments.push(startMoment.add(i,interval).format("MM/DD/YYYY a"));
+    }
+
+    return moments;
+}
+
+
+function tester() {
+    var userArr = ["459397934136688650"];
+    var aMoment = moment().subtract(1, 'week');
+
+    var data = createLines(userArr, aMoment);
+
+    d3nLine({
+        data: data,
+        container: `<div id="container"><h2>Multiline Example</h2><div id="chart"></div></div>`,
+        lineColors: ["steelblue", "darkorange"],
+        width: 800,
+        height: 570
+    })
 }
