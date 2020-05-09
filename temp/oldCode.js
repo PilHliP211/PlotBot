@@ -1,3 +1,5 @@
+
+
 const fs = require('fs');
 const moment = require('moment');
 /*const output = require('d3node-output');
@@ -12,51 +14,6 @@ const client = new Discord.Client();
 moment.defaultFormat = 'dddd, MMMM Do YYYY, h:mm:ss a';
 
 var points;
-
-client.on('ready', () => {
-    var data = loadData();
-    points = data.points;
-    sortByTime();
-    console.log("There are currently " + points.length + " plotted points.");
-    console.log(moment().format());
-    console.log('I am ready!');
-    plot();
-});
-
-client.on('message', message => {
-    if (message.content === 'ping') {
-        message.reply('pong');
-        message.reply('poing');
-    }
-
-    if (message.content === 'now') {
-        message.reply(moment().format());
-    }
-
-    if (message.content.startsWith('get latest')) {
-        message.reply(printPlotPoint(getLatest()));
-    }
-
-    if (message.content.startsWith('help')) {
-        message.reply(getHelp());
-    }
-
-    if (message.content.startsWith('add')) {
-        if (addPoint(message) < 0)
-            message.reply("I ran into some trouble adding this plot point. :frowning:");
-        else
-            message.reply("Done and done. :sunglasses:");
-    }
-    if (message.content.startsWith('plot')) {
-        plot();
-    }
-    if (message.content.startsWith('test')) {
-        tester();
-    }
-
-});
-
-client.login(process.env.BOT_TOKEN);
 
 function getHelp() {
     var helpText;
@@ -154,12 +111,12 @@ function printPlotPoint(plotpoint) {
 }
 
 function plot() {
-    require('./plotVega');
+    require('./helpers/plotVega');
     return;
     //const parseTime = d3.timeParse('%d-%b-%y');
     const tsvString = pointArrToTsvString();
 
-    var plotline = require('../PlotBot/plotline')
+    var plotline = require('../plotline')
     plotline.plot(tsvString);
 
     var data = d3.tsvParse(tsvString, d => {

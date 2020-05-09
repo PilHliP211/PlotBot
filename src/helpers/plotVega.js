@@ -1,9 +1,14 @@
+/**
+ * plotVega.js
+ * Provides functions for plotting graphs with the vega API
+ */
+
 const vega = require('vega'), canvas = require('canvas'), fs = require('fs');
 var vegaLite = require('vega-lite');
 
 
-var linePlotOverTimeSpec = require('./line-plot-over-time.spec.json');
-//var linePlotOverTimeSpec = require('./temp.spec.json');
+//var linePlotOverTimeSpec = require('./line-plot-over-time.spec.json');
+var linePlotOverTimeSpec = require('../../line.spec.json');
 
 // create a new view instance for a given Vega JSON spec
 var view = new vega
