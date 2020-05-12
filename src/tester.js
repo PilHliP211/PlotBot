@@ -68,8 +68,7 @@ function OnReady() {
 function OnMessage(message) {
     var command = Commander.CreateCommand(message.content);
     if(command != null){
-        command.FillInMissing(message);
-        command.Execute();
+        command.Execute(message);
     }
     else
         console.log('Badly formatted command text');

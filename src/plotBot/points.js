@@ -23,8 +23,8 @@ class Points {
     }
 
     write(){
-        var file = {points: sortByTime(this.points)}
-        helper.writeData(file);
+        var file = sortByTime(this.points);
+        helper.writeDataPiece(file,"points");
     }
 
 }

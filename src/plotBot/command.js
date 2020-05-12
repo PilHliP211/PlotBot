@@ -3,11 +3,14 @@
  * This implements the high level API commands for PlotBot.
  */
 const moment = require('moment')
-const commandIdentifier = "@PlotBot";
+var commandIdentifier = "";
+const mentionPrefix = '<@!';
 
 const Points = require('./points').Points;
-
 var points = new Points();
+
+const Channels = require('./config.js').Channels;
+var channels = new Channels();
 
 class Command {
     /**
@@ -33,22 +36,23 @@ class Command {
         return this._type;
     }
 
-    Execute() {
+    Execute(message) {
+        this.fillInMissing(message);
         if (this._type === Type().Init) {
             console.log("Init " + this._params);
-            init(this._params.split(" "));
+            return init(message.channel);
         }
         else if (this._type === Type().Add) {
             console.log("Add " + this._params);
-            add(this._params.split(" "));
+            return add(this._params.split(" "));
         }
         else if (this._type === Type().Plot) {
             console.log("Plot " + this._params);
-            plot(this._params.split(" "));
+            return plot(this._params.split(" "));
         }
     }
 
-    FillInMissing(message){
+    fillInMissing(message){
         var pieces = this._params.split(" ");
         if(this._type == Type().Add) {
             // ensure the command format is ok:
@@ -73,13 +77,19 @@ var commandExports = {
      * @param {string} messageContent The content of a message to be turned into a command.
      * @returns {Command} a Command ready for execution or null if unusable message content was passed.
      */
-    CreateCommand
+    CreateCommand,
+    /**
+     * creates the identifier for plotbot messages based on the bot's id
+     * @param {string} BotUserId the user id of the bot
+     */
+    SetCommandIdentifier,
 }
 module.exports = commandExports;
 
 
-function init(params) {
-
+function init(channel) {
+    channels.AddListenToChannel(channel.id);
+    return getHelp();
 }
 
 function add(params) {
@@ -87,12 +97,12 @@ function add(params) {
     if (!value) return -1;
 
     var user = params[1];
-    const mentionPrefix = '<@!';
     if (user.startsWith(mentionPrefix))
         user = user.substring(user.indexOf(mentionPrefix) + mentionPrefix.length, user.length - 1);
     
     points.add(points.createPoint(user,value,moment()));
     points.write();
+    return "done and done! :sunglasses:";
 }
 
 function plot(params) {
@@ -103,7 +113,7 @@ function plot(params) {
     }
     var filters = getFiltering(timespan);
     vega.create(filters.startingTime,filters.endingTime, filters.tickCount);
-    return;
+    return "Getting your graph ready for sending!";
 }
 
 function getFiltering(timespan){
@@ -163,20 +173,20 @@ function CreateCommand(messageContent) {
     var pieces = messageContent.split(' ');
     // remove commandIdentifier
     pieces.shift();
-    var commandTypeStr = pieces[0];
+    var commandTypeStr = pieces[0].toLowerCase();
     if (!Number.isNaN(parseInt(commandTypeStr))) {
         // if the first piece is a number use the default Add command.    
         return new Command(pieces.join(" "), Type().Add);
     }
-    else if (commandTypeStr == Type().Add) {
+    else if (commandTypeStr == Type().Add.toLowerCase()) {
         pieces.shift();
         return new Command(pieces.join(" "), Type().Add);
     }
-    else if (commandTypeStr == Type().Init) {
+    else if (commandTypeStr == Type().Init.toLowerCase()) {
         pieces.shift();
         return new Command(pieces.join(" "), Type().Init);
     }
-    else if (commandTypeStr == Type().Plot) {
+    else if (commandTypeStr == Type().Plot.toLowerCase()) {
         pieces.shift();
         return new Command(pieces.join(" "), Type().Plot);
     }
@@ -185,17 +195,23 @@ function CreateCommand(messageContent) {
     }
 }
 
+function SetCommandIdentifier(BotUserId) {
+    commandIdentifier = mentionPrefix+BotUserId+'>';
+}
+
 function getHelp() {
-    var helpText;
+    var helpText = "";
     helpText += "Hey there! My name is PlotBot! :sunglasses:\n";
     helpText += "I'm a discord bot that helps users plot and track values and trends over time.\n";
     helpText += "First, plot a few points using the `add` command. Like this:\n";
     helpText += "`@PlotBot add 75`\n";
     helpText += "This will create a plot point for your user with value of 75 for this instance in time.\n";
+    helpText += "If you are lazy like me, you don't even need to send the `add` part. Just send `@PlotBot 75` to Add a value of 75.\n";
+    /*
     helpText += "You can also specify other users by @-ing them after you specify the value to plot for them:\n";
     helpText += "`@PlotBot add 124 @userName`\n";
     helpText += "This will create a plot point for their user with value of 124 for this instance in time.\n";
-
+    */
     // no ability to specify custom moments for now.
     /*
     helpText += "Finally, you can specify a point in time other than right now by specifying a date and time string after the user:\n";
@@ -204,16 +220,17 @@ function getHelp() {
     helpText += "If you want to specify a plot for your own graph but at a different time, just @ your own user.\n";
     */
 
-    helpText += "Now that you have given me some data, I can do some cool stuff with it: \n";
-    helpText += "`@PlotBot graph week`\n";
-    helpText += "Then I'll send you a graph of all plots over the last week for your user that looks like this:\n";
-    helpText += "<placeholder sample graph image>\n";
+    helpText += "Now that you have given me some data, I can do some cool stuff with it! \n If you send me: \n";
+    helpText += "`@PlotBot plot `\n";
+    helpText += "I'll reply with an image of a graph of all plots this week for your user.\n";
 
+    /*
     helpText += "You can specify day, week, month or year. You can also add additional users you would like to see graphed along with yourself.\n";
     helpText += "`@PlotBot graph month @userName @wumpus`\n";
     helpText += "<placeholder sample graph image>\n";
+    */
 
-    helpText += "Thanks for listening! I can't wait to get to work! :smile: ";
+    helpText += "Thanks for listening! I can't wait to get to work! :smile:";
 
     return helpText;
 }
