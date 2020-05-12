@@ -1,0 +1,57 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A line chart.",
+  "width": 500,
+  "height": 200,
+  "padding": 5,
+  "background": "white",
+  "data": [
+    {
+      "name": "plotPoints",
+      "url": "./data/plots.json",
+      "format": {
+        "type": "json",
+        "property": "points",
+        "parse":{ "moment": "date"}
+      },
+      "transform": [
+        {
+          "type": "collect",
+          "sort": {"field": "moment"}
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "xscale",
+      "type": "time",
+      "domain": {"data": "plotPoints", "field": "moment"},
+      "range": "width",
+      "padding": 0.05
+    },
+    {
+      "name": "yscale",
+      "domain": {"data": "plotPoints", "field": "value"},
+      "nice": true,
+      "range": "height"
+    }
+  ],
+  "axes": [
+    { "orient": "bottom", "scale": "xscale", "formatType":"time","format":"%a %p", "labelOverlap":true },
+    { "orient": "left", "scale": "yscale" }
+  ],
+  "marks": [
+    {
+      "type": "line",
+      "from": {"data": "plotPoints"},
+      "encode": {
+        "enter": {
+          "x": {"scale": "xscale", "field": "moment"},
+          "y": {"scale": "yscale", "field": "value"},
+          "strokeWidth": {"value": 2}
+        }
+      }
+    }
+  ]
+}
