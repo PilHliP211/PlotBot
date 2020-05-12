@@ -38,7 +38,7 @@
     }
   ],
   "axes": [
-    { "orient": "bottom", "scale": "xscale", "formatType":"time","format":"%a %p" },
+    { "orient": "bottom", "scale": "xscale", "formatType":"time","format":"%a %p", "labelOverlap":true },
     { "orient": "left", "scale": "yscale" }
   ],
   "marks": [

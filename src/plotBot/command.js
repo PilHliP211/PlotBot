@@ -68,35 +68,49 @@ function add(params) {
 
 }
 
-// TODO: update params schema
 function plot(params) {
     var vega = require('./helpers/plotVega');
-    var startMillis = getFilterStartingMillis(params[0]);
-    vega.create(startMillis);
-    return;
-}
-function getFilterStartingMillis(timespan){
+    var timespan = params[0];
     if(!timespan){
         timespan = "wtd"
     }
+    var filters = getFiltering(timespan);
+    vega.create(filters.startingTime,filters.endingTime, filters.tickCount);
+    return;
+}
+
+function getFiltering(timespan){
     var startingTime;
+    var endingTime;
+    var niceFormat;
+    var tickCount
     switch(timespan){
         case "week":
             startingTime = moment().startOf("day").subtract(1,"weeks").toDate().getTime();
+            endingTime = moment(startingTime).add(1,"weeks").endOf("day").toDate().getTime();
+            niceFormat = {"interval":"day","step":7}
             break;
         case "month":
             startingTime = moment().startOf("day").subtract(1,"months").toDate().getTime();
+            endingTime = moment(endingTime).add(1,"months").endOf("day").toDate().getTime();
+            niceFormat = {"interval":"week","step":4} //roughly...
             break;
         case 'mtd':
             startingTime = moment().startOf("month").toDate().getTime();
+            endingTime = moment().endOf("day").toDate().getTime();
+            niceFormat = {"interval":"month","step":1}
             break;
         case "wtd":
         default:
             startingTime = moment().startOf("week").toDate().getTime();
+            endingTime = moment().endOf("day").toDate().getTime();
+            niceFormat = {"interval":"week","step":1}
             break;
     }
+    tickCount = moment.duration(moment(endingTime).diff(moment(startingTime))).days() * 2
+    if(moment().isAfter(moment().hours(12).startOf("hour"))) tickCount++;
 
-    return startingTime;
+    return {"startingTime":startingTime,"endingTime":endingTime, "niceFormat":niceFormat, "tickCount": tickCount}
 }
 
 function thing(){
