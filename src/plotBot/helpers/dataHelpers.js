@@ -3,7 +3,7 @@
  * Provides functions for retrieving data from storage.
  */
 const fs = require('fs');
-const filename = 'plots.json';
+const filename = './data/plots.json';
 
 /**
  * Loads the json file and returns a JSON object

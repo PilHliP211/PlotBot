@@ -2,13 +2,14 @@
  * plotVega.js
  * Provides functions for plotting graphs with the vega API
  */
+const ouputFile = './output/plot.png';
 
 let create =
 //todo endMillis for filter
 function createPlot(beginMillis, endMillis, tickCount){
   const vega = require('vega'), canvas = require('canvas'), fs = require('fs');
   
-  var plotSpec = require('../../../line.spec.json');
+  var plotSpec = require('line.spec.json');
   // dynamic updates based on call params
   var expr = 'time(datum.moment) > '+beginMillis+' && time(datum.moment) < '+endMillis;
   var data = plotSpec.data.find(item => item.name == "plotPoints");
@@ -33,7 +34,7 @@ function createPlot(beginMillis, endMillis, tickCount){
       // process node-canvas instance for example, generate a PNG stream to write var
       // stream = canvas.createPNGStream();
       console.log('Writing PNG to file...')
-      fs.writeFileSync('linePlotOverTimeChart.png', canvas.toBuffer())
+      fs.writeFileSync(outputFile, canvas.toBuffer())
     })
     .catch(function (err) {
       console.log("Error writing PNG to file:")
