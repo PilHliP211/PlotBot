@@ -31,7 +31,7 @@ This is the default PlotBot command, so the command text can be ommitted. Users 
 ## Plot
 When this command is called, PlotBot will respond with a graph of the relevant data points as an image.
 ### Parameters
-1. timespan (optional - uses 'wtd' if missing) how far back to plot the graph. Should either be 'week', 'wtd' (week to date starting last sunday) or 'month'
+1. timespan (optional - uses 'wtd' if missing) how far back to plot the graph. Should either be 'week', 'wtd' (week to date starting last sunday), 'month', or 'mtd'
 2. users (optional - uses all users if missing) plot the graph over time for the specified users. You can specify as many users as desired sepearated by spaces.
 ### Usage
 `@PlotBot Plot`

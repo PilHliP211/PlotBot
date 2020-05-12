@@ -18,7 +18,7 @@ function devTester(){
         content: '@PlotBot Init'
     },
     message = {
-        content: '@PlotBot Plot week'
+        content: '@PlotBot Plot mtd'
     },
     message = {
         content: 'butts'

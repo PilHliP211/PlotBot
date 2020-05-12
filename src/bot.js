@@ -7,7 +7,7 @@ const Discord = require('discord.js');
 
 const client = new Discord.Client();
 
-const botCommands = require('./plotBot/command');
+const Commander = require('./plotBot/command');
 
 client.on('ready', () => {
     console.log('Loading Data.')
@@ -17,37 +17,13 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
+    
     // parse message and construct a command...
-    if (message.content === 'ping') {
-        message.reply('pong');
-        message.reply('poing');
-    }
-
-    if (message.content === 'now') {
-        message.reply(moment().format());
-    }
-
-    if (message.content.startsWith('get latest')) {
-        message.reply(printPlotPoint(getLatest()));
-    }
-
-    if (message.content.startsWith('help')) {
-        message.reply(getHelp());
-    }
-
-    if (message.content.startsWith('add')) {
-        if (addPoint(message) < 0)
-            message.reply("I ran into some trouble adding this plot point. :frowning:");
-        else
-            message.reply("Done and done. :sunglasses:");
-    }
-    if (message.content.startsWith('plot')) {
-        plot();
-    }
-    if (message.content.startsWith('test')) {
-        tester();
-    }
-
+    var command = Commander.CreateCommand(message.content);
+    if(command != null)
+        command.Execute();
+    else
+        console.log('Badly formatted command text');
 });
 
 client.login(process.env.BOT_TOKEN);
@@ -148,8 +124,7 @@ function printPlotPoint(plotpoint) {
 }
 
 function plot() {
-    require('./helpers/plotVega');
-    return;
+    
     //const parseTime = d3.timeParse('%d-%b-%y');
     const tsvString = pointArrToTsvString();
 

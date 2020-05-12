@@ -2,6 +2,7 @@
  * command.js
  * This implements the high level API commands for PlotBot.
  */
+const moment = require('moment');
 const commandIdentifier = "@PlotBot";
 
 class Command {
@@ -31,19 +32,18 @@ class Command {
     Execute() {
         if (this._type === Type().Init) {
             console.log("Init " + this._params);
-            init(this._params);
+            init(this._params.split(" "));
         }
         else if (this._type === Type().Add) {
             console.log("Add " + this._params);
-            add(this._params);
+            add(this._params.split(" "));
         }
         else if (this._type === Type().Plot) {
             console.log("Plot " + this._params);
-            plot(this._params);
+            plot(this._params.split(" "));
         }
     }
 }
-
 
 var commandExports = {
     types: function () {
@@ -59,16 +59,50 @@ var commandExports = {
 }
 module.exports = commandExports;
 
-function init(message) {
+
+function init(params) {
 
 }
 
-function add(message) {
+function add(params) {
 
 }
 
-function plot(message) {
+// TODO: update params schema
+function plot(params) {
+    var vega = require('./helpers/plotVega');
+    var startMillis = getFilterStartingMillis(params[0]);
+    vega.create(startMillis);
+    return;
+}
+function getFilterStartingMillis(timespan){
+    if(!timespan){
+        timespan = "wtd"
+    }
+    var startingTime;
+    switch(timespan){
+        case "week":
+            startingTime = moment().startOf("day").subtract(1,"weeks").toDate().getTime();
+            break;
+        case "month":
+            startingTime = moment().startOf("day").subtract(1,"months").toDate().getTime();
+            break;
+        case 'mtd':
+            startingTime = moment().startOf("month").toDate().getTime();
+            break;
+        case "wtd":
+        default:
+            startingTime = moment().startOf("week").toDate().getTime();
+            break;
+    }
 
+    return startingTime;
+}
+
+function thing(){
+    // TODO:
+    // delete first item in message
+    // process every item left in message as a user to be included in the filter
 }
 
 function Type() {

@@ -45,6 +45,11 @@
         "domain": {"data": "table", "field": "y1"}
       },
       {
+        "name": "timescale",
+        "type": "time",
+        "nice": {"interval": "hour", "step": 12}
+      },
+      {
         "name": "color",
         "type": "ordinal",
         "range": "category",
@@ -58,24 +63,47 @@
     ],
   
     "marks": [
-      {
-        "type": "rect",
-        "from": {"data": "table"},
-        "encode": {
-          "enter": {
-            "x": {"scale": "x", "field": "x"},
-            "width": {"scale": "x", "band": 1, "offset": -1},
-            "y": {"scale": "y", "field": "y0"},
-            "y2": {"scale": "y", "field": "y1"},
-            "fill": {"scale": "color", "field": "c"}
-          },
-          "update": {
-            "fillOpacity": {"value": 1}
-          },
-          "hover": {
-            "fillOpacity": {"value": 0.5}
-          }
+    {
+      "type": "rect",
+      "from": {"data": "table"},
+      "encode": {
+        "enter": {
+          "x": {"scale": "x", "field": "x"},
+          "width": {"scale": "x", "band": 1, "offset": -1},
+          "y": {"scale": "y", "field": "y0"},
+          "y2": {"scale": "y", "field": "y1"},
+          "fill": {"scale": "color", "field": "c"}
+        },
+        "update": {
+          "fillOpacity": {"value": 1}
+        },
+        "hover": {
+          "fillOpacity": {"value": 0.5}
         }
       }
-    ]
-  }
+    },
+    {
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "series",
+          "data": "plotPoints",
+          "groupby": "user"
+        }
+      },
+      "marks": [
+        {
+          "type": "line",
+          "from": {"data": "series"},
+          "encode": {
+            "enter": {
+              "x": {"scale": "xscale", "field": "moment"},
+              "y": {"scale": "yscale", "field": "value"},
+              "strokeWidth": {"value": 2}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
