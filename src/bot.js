@@ -20,6 +20,7 @@ client.on('message', message => {
     
     // parse message and construct a command...
     var command = Commander.CreateCommand(message.content);
+    command.FillInMissing(message);
     if(command != null)
         command.Execute();
     else

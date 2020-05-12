@@ -2,8 +2,12 @@
  * command.js
  * This implements the high level API commands for PlotBot.
  */
-const moment = require('moment');
+const moment = require('moment')
 const commandIdentifier = "@PlotBot";
+
+const Points = require('./points').Points;
+
+var points = new Points();
 
 class Command {
     /**
@@ -43,6 +47,20 @@ class Command {
             plot(this._params.split(" "));
         }
     }
+
+    FillInMissing(message){
+        var pieces = this._params.split(" ");
+        if(this._type == Type().Add) {
+            // ensure the command format is ok:
+            var value = parseInt(pieces[0]);
+            if (!value) return; // this means the Execute will fail.
+
+            // if user piece was omitted, use the id of the message author
+            if (pieces.length < 2)
+                pieces.push(message.author.id);
+        }
+        this._params = pieces.join(" ");
+    }
 }
 
 var commandExports = {
@@ -65,7 +83,16 @@ function init(params) {
 }
 
 function add(params) {
+    var value = parseInt(params[0]);
+    if (!value) return -1;
 
+    var user = params[1];
+    const mentionPrefix = '<@!';
+    if (user.startsWith(mentionPrefix))
+        user = user.substring(user.indexOf(mentionPrefix) + mentionPrefix.length, user.length - 1);
+    
+    points.add(points.createPoint(user,value,moment()));
+    points.write();
 }
 
 function plot(params) {

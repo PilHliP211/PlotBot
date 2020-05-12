@@ -12,20 +12,44 @@ function devTester(){
 
     var messages = [
     message = {
-        content: '@PlotBot Add 78'
+        content: '@PlotBot Add ' + (Math.floor(Math.random() * 100) + 1),
+        author: {
+            id: '459397934136688650'
+        }
     },
     message = {
-        content: '@PlotBot Init'
+        content: '@PlotBot Init',
+        author: {
+            id: '459397934136688650'
+        }
     },
     message = {
-        content: '@PlotBot Plot wtd'
+        content: '@PlotBot Plot wtd',
+        author: {
+            id: '459397934136688650'
+        }
     },
     message = {
-        content: 'butts'
+        content: 'butts',
+        author: {
+            id: '459397934136688650'
+        }
     },
     message = {
-        content: '@PlotBot 78'
+        content: '@PlotBot ' + (Math.floor(Math.random() * 100) + 1),
+        author: {
+            id: '459397934136688650'
+        }
     }]
+
+    messages = [
+        message = {
+            content: '@PlotBot Plot wtd',
+            author: {
+                id: '459397934136688650'
+            }
+        }
+    ]
 
 
     messages.forEach(message => {
@@ -43,8 +67,10 @@ function OnReady() {
 
 function OnMessage(message) {
     var command = Commander.CreateCommand(message.content);
-    if(command != null)
+    if(command != null){
+        command.FillInMissing(message);
         command.Execute();
+    }
     else
         console.log('Badly formatted command text');
 }
