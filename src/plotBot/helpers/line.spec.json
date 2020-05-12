@@ -8,7 +8,7 @@
   "data": [
     {
       "name": "plotPoints",
-      "url": "./plots.json",
+      "url": "./data/plots.json",
       "format": {
         "type": "json",
         "property": "points",
