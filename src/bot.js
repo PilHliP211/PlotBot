@@ -19,6 +19,7 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
+    if(!message.guild || !message.channel) return;
     var guild = client.guilds.cache.array().find(ch => ch.name === message.guild.name);
     var channel = guild.channels.cache.array().find(ch => ch.name === message.channel.name);
     // was plot bot mentioned?
@@ -35,6 +36,10 @@ client.on('message', message => {
                     channels = new Channels();
                 }
 
+                if(command.type === Commander.types().Add) {
+                    message.react('👍');
+                }
+                
                 if(reply && reply.length > 0) {
                     message.reply(reply);
                 }

@@ -11,8 +11,10 @@ class Channels{
 
     AddListenToChannel(channelId)
     {
-        if(!this._channelIds) this._channelIds = []
-        this._channelIds.push(channelId);
+        if(!this._channelIds) 
+            this._channelIds = []
+        if(!this._channelIds.includes(channelId))
+            this._channelIds.push(channelId);
         helper.writeDataPiece(this._channelIds,"channelIds");
     }
     get channelIds(){

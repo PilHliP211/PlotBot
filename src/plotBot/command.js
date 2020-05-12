@@ -102,7 +102,7 @@ function add(params) {
     
     points.add(points.createPoint(user,value,moment()));
     points.write();
-    return "done and done! :sunglasses:";
+    return;
 }
 
 function plot(params) {
