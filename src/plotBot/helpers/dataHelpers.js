@@ -3,7 +3,8 @@
  * Provides functions for retrieving data from storage.
  */
 const fs = require('fs');
-const filename = './data/plots.json';
+const dataDir = './data';
+const filename = dataDir + '/plots.json';
 const defaultDataFile = {"points":[],"channelIds":[]}
 
 /**
@@ -23,6 +24,9 @@ function loadData() {
  * @param {*} data the object to be serialized to a file
  */
 function writeData(data) {
+    if (!fs.existsSync(dataDir)){
+        fs.mkdirSync(dataDir);
+    }
     fs.writeFileSync(filename, JSON.stringify(data));
 }
 
