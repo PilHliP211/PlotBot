@@ -4,7 +4,7 @@
  */
 
 let create =
-  function createPlot(beginMillis, endMillis, tickCount) {
+  async function createPlot(beginMillis, endMillis, tickCount) {
     const vega = require('vega'), canvas = require('canvas'), fs = require('fs');
 
     var plotSpec = require('./line.spec.json');
@@ -26,7 +26,7 @@ let create =
       .renderer('none')
       .initialize();
     // generate static PNG file from chart
-    view
+    await view
       .toCanvas()
       .then(function (canvas) {
         // process node-canvas instance for example, generate a PNG stream to write var
@@ -36,7 +36,7 @@ let create =
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir);
         }
-        fs.writeFileSync(dir + '/plot.png', canvas.toBuffer())
+        fs.writeFileSync(dir + '/plot.png', canvas.toBuffer());
       })
       .catch(function (err) {
         console.log("Error writing PNG to file:")

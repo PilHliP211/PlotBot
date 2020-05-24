@@ -27,31 +27,34 @@ client.on('message', message => {
         var listenChans = channels.channelIds;
         // do we car about this channel or is it an init?
         if ((listenChans && listenChans.includes(channel.id)) || message.content.toLowerCase().includes("init")) {
-
-            // parse message and construct a command...
-            var command = Commander.CreateCommand(message.content);
-            if (command != null) {
-                var reply = command.Execute(message);
-                if(command.type === Commander.types().Init) {
-                    channels = new Channels();
-                }
-
-                if(command.type === Commander.types().Add) {
-                    message.react('👍');
-                }
-                
-                if(reply && reply.length > 0) {
-                    message.reply(reply);
-                }
-
-                if(command.type === Commander.types().Plot) {
-                    message.channel.send(new MessageAttachment('./output/plot.png', 'plot.png')).catch(console.error);
-                }
-            }
-            else
-                console.log('Badly formatted command text');
+            execute(message);
         }
     }
 });
 
 client.login(process.env.BOT_TOKEN);
+
+async function execute(message){
+    // parse message and construct a command...
+    var command = Commander.CreateCommand(message.content);
+    if (command != null) {
+        var reply = await command.Execute(message);
+        if(command.type === Commander.types().Init) {
+            channels = new Channels();
+        }
+
+        if(command.type === Commander.types().Add) {
+            message.react('👍');
+        }
+        
+        if(reply && reply.length > 0) {
+            message.reply(reply);
+        }
+
+        if(command.type === Commander.types().Plot) {
+            message.channel.send(new MessageAttachment('./output/plot.png', 'plot.png')).catch(console.error);
+        }
+    }
+    else
+        console.log('Badly formatted command text');
+}

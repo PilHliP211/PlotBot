@@ -36,7 +36,7 @@ class Command {
         return this._type;
     }
 
-    Execute(message) {
+    async Execute(message) {
         this.fillInMissing(message);
         if (this._type === Type().Init) {
             console.log("Init " + this._params);
@@ -48,7 +48,7 @@ class Command {
         }
         else if (this._type === Type().Plot) {
             console.log("Plot " + this._params);
-            return plot(this._params.split(" "));
+            return await plot(this._params.split(" "));
         }
     }
 
@@ -106,15 +106,15 @@ function add(params) {
     return;
 }
 
-function plot(params) {
+async function plot(params) {
     var vega = require('./helpers/plotVega');
     var timespan = params[0];
     if(!timespan){
         timespan = "week"
     }
     var filters = getFiltering(timespan);
-    vega.create(filters.startingTime,filters.endingTime, filters.tickCount);
-    return "Getting your graph ready for sending!";
+    await vega.create(filters.startingTime,filters.endingTime, filters.tickCount);
+    return "Here ya go!";
 }
 
 function getFiltering(timespan){
