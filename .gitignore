@@ -1,5 +1,5 @@
 # plotbot ignores
-plots.json
+data/
 output/
 
 # vscode ignores

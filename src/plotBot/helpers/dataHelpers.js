@@ -4,19 +4,18 @@
  */
 const fs = require('fs');
 const filename = './data/plots.json';
+const defaultDataFile = {"points":[],"channelIds":[]}
 
 /**
  * Loads the json file and returns a JSON object
  */
 function loadData() {
 
-    var plotFile;
-    try{
-        plotfile = fs.readFileSync(filename, "utf8");
-    } catch (err){
-        console.log("datafile could not be opened. creating new datafile.");
-        plotFile = createNewDataFile();
+    if(!fs.existsSync(filename)){
+        writeData(defaultDataFile);
+        return defaultDataFile;
     }
+    var plotFile = fs.readFileSync(filename, "utf8");
     return JSON.parse(plotFile);
 }
 /**
@@ -37,12 +36,6 @@ function writeDataPiece(datapiece,piecename) {
     file[piecename] = datapiece;
     writeData(file);
 }
-
-function createNewDataFile() {
-    var f = new File(["{}"],filename);
-    return f;
-}
-
 
 var helperExports = {
     loadData,

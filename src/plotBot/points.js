@@ -5,7 +5,7 @@
 const helper = require('./helpers/dataHelpers'), moment = require('moment');
 class Points {
 
-    constructor() {     
+    constructor() {
         this.points = sortByTime(helper.loadData().points);
     }
 

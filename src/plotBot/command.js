@@ -88,6 +88,7 @@ module.exports = commandExports;
 
 
 function init(channel) {
+    if(!channels) channels = [];
     channels.AddListenToChannel(channel.id);
     return getHelp();
 }
@@ -109,7 +110,7 @@ function plot(params) {
     var vega = require('./helpers/plotVega');
     var timespan = params[0];
     if(!timespan){
-        timespan = "wtd"
+        timespan = "week"
     }
     var filters = getFiltering(timespan);
     vega.create(filters.startingTime,filters.endingTime, filters.tickCount);
@@ -123,13 +124,13 @@ function getFiltering(timespan){
     var tickCount
     switch(timespan){
         case "week":
-            startingTime = moment().startOf("day").subtract(1,"weeks").toDate().getTime();
-            endingTime = moment(startingTime).add(1,"weeks").endOf("day").toDate().getTime();
+            startingTime = moment().startOf("week").toDate().getTime();
+            endingTime = moment(startingTime).endOf("week").toDate().getTime();
             niceFormat = {"interval":"day","step":7}
             break;
         case "month":
-            startingTime = moment().startOf("day").subtract(1,"months").toDate().getTime();
-            endingTime = moment(endingTime).add(1,"months").endOf("day").toDate().getTime();
+            startingTime = moment().startOf("day").toDate().getTime();
+            endingTime = moment(endingTime).endOf("month").toDate().getTime();
             niceFormat = {"interval":"week","step":4} //roughly...
             break;
         case 'mtd':
