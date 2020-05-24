@@ -4,12 +4,13 @@
     "version": "0.0.1",
     "main": "bot.js",
     "scripts": {
-        "start": "node bot.js"
+        "start": "node src/bot.js"
     },
     "dependencies": {
         "canvas": "2.6.1",
-        "vega": "5.11.1",
         "discord.js": "12.2.0",
-        "moment": "2.25.3"
+        "moment": "2.25.3",
+        "vega": "5.11.1",
+        "request": "2.88.2"
     }
 }
