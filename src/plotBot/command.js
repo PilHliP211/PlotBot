@@ -3,8 +3,6 @@
  * This implements the high level API commands for PlotBot.
  */
 const moment = require('moment')
-var commandIdentifier = "";
-const mentionPrefix = '<@!';
 
 const Points = require('./points').Points;
 var points = new Points();
@@ -63,6 +61,9 @@ class Command {
             if (pieces.length < 2)
                 pieces.push(message.author.id);
         }
+        else if(this._type == Type().Plot){
+            pieces.push(message.author.id);
+        }
         this._params = pieces.join(" ");
     }
 }
@@ -77,12 +78,7 @@ var commandExports = {
      * @param {string} messageContent The content of a message to be turned into a command.
      * @returns {Command} a Command ready for execution or null if unusable message content was passed.
      */
-    CreateCommand,
-    /**
-     * creates the identifier for plotbot messages based on the bot's id
-     * @param {string} BotUserId the user id of the bot
-     */
-    SetCommandIdentifier,
+    CreateCommand
 }
 module.exports = commandExports;
 
@@ -98,6 +94,7 @@ function add(params) {
     if (!value) return -1;
 
     var user = params[1];
+    var mentionPrefix = "<@";
     if (user.startsWith(mentionPrefix))
         user = user.substring(user.indexOf(mentionPrefix) + mentionPrefix.length, user.length - 1);
     
@@ -107,17 +104,17 @@ function add(params) {
 }
 
 async function plot(params) {
-    var vega = require('./helpers/plotVega');
     var timespan = params[0];
     if(!timespan){
         timespan = "week"
     }
-    var filters = getFiltering(timespan);
-    await vega.create(filters.startingTime,filters.endingTime, filters.tickCount);
+    var user = params[1];
+    var filters = getFiltering(timespan,user);
+    await require('./helpers/plotVega').create(filters.startingTime,filters.endingTime, filters.tickCount, filters.user);
     return "Here ya go!";
 }
 
-function getFiltering(timespan){
+function getFiltering(timespan, user){
     var startingTime;
     var endingTime;
     var niceFormat;
@@ -148,7 +145,7 @@ function getFiltering(timespan){
     tickCount = moment.duration(moment(endingTime).diff(moment(startingTime))).days() * 2
     if(moment().isAfter(moment().hours(12).startOf("hour"))) tickCount++;
 
-    return {"startingTime":startingTime,"endingTime":endingTime, "niceFormat":niceFormat, "tickCount": tickCount}
+    return {"startingTime":startingTime,"endingTime":endingTime, "niceFormat":niceFormat, "tickCount": tickCount, "user":user}
 }
 
 function thing(){
@@ -168,11 +165,8 @@ function Type() {
 }
 
 function CreateCommand(messageContent) {
-    if (!messageContent.startsWith(commandIdentifier)) {
-        return null;
-    }
     var pieces = messageContent.split(' ');
-    // remove commandIdentifier
+    // remove bot mention
     pieces.shift();
     var commandTypeStr = pieces[0].toLowerCase();
     if (!Number.isNaN(parseInt(commandTypeStr))) {
@@ -194,10 +188,6 @@ function CreateCommand(messageContent) {
     else {
         return null;
     }
-}
-
-function SetCommandIdentifier(BotUserId) {
-    commandIdentifier = mentionPrefix+BotUserId+'>';
 }
 
 function getHelp() {

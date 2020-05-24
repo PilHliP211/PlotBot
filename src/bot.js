@@ -13,8 +13,6 @@ const Channels = require('./plotBot/config.js').Channels;
 var channels = new Channels();
 
 client.on('ready', () => {
-    console.log('Loading Data.');
-    Commander.SetCommandIdentifier(client.user.id);
     console.log('Ready...');
 });
 
