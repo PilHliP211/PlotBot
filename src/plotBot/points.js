@@ -30,6 +30,8 @@ class Points {
 }
 
 function sortByTime(points) {
+    if(!points)
+    return [];
     points.sort((a, b) => (moment(a.moment).isBefore(moment(b.moment))) ? 1 : -1)
     return points;
 }
