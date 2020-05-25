@@ -3,8 +3,6 @@
  * This implements the high level API commands for PlotBot.
  */
 const moment = require('moment')
-var commandIdentifier = "";
-const mentionPrefix = '<@!';
 
 const Points = require('./points').Points;
 var points = new Points();
@@ -36,7 +34,7 @@ class Command {
         return this._type;
     }
 
-    Execute(message) {
+    async Execute(message) {
         this.fillInMissing(message);
         if (this._type === Type().Init) {
             console.log("Init " + this._params);
@@ -48,7 +46,7 @@ class Command {
         }
         else if (this._type === Type().Plot) {
             console.log("Plot " + this._params);
-            return plot(this._params.split(" "));
+            return await plot(this._params.split(" "));
         }
     }
 
@@ -62,6 +60,9 @@ class Command {
             // if user piece was omitted, use the id of the message author
             if (pieces.length < 2)
                 pieces.push(message.author.id);
+        }
+        else if(this._type == Type().Plot){
+            pieces.push(message.author.id);
         }
         this._params = pieces.join(" ");
     }
@@ -77,17 +78,13 @@ var commandExports = {
      * @param {string} messageContent The content of a message to be turned into a command.
      * @returns {Command} a Command ready for execution or null if unusable message content was passed.
      */
-    CreateCommand,
-    /**
-     * creates the identifier for plotbot messages based on the bot's id
-     * @param {string} BotUserId the user id of the bot
-     */
-    SetCommandIdentifier,
+    CreateCommand
 }
 module.exports = commandExports;
 
 
 function init(channel) {
+    if(!channels) channels = [];
     channels.AddListenToChannel(channel.id);
     return getHelp();
 }
@@ -97,6 +94,7 @@ function add(params) {
     if (!value) return -1;
 
     var user = params[1];
+    var mentionPrefix = "<@";
     if (user.startsWith(mentionPrefix))
         user = user.substring(user.indexOf(mentionPrefix) + mentionPrefix.length, user.length - 1);
     
@@ -105,31 +103,31 @@ function add(params) {
     return;
 }
 
-function plot(params) {
-    var vega = require('./helpers/plotVega');
+async function plot(params) {
     var timespan = params[0];
     if(!timespan){
-        timespan = "wtd"
+        timespan = "week"
     }
-    var filters = getFiltering(timespan);
-    vega.create(filters.startingTime,filters.endingTime, filters.tickCount);
-    return "Getting your graph ready for sending!";
+    var user = params[1];
+    var filters = getFiltering(timespan,user);
+    await require('./helpers/plotVega').create(filters.startingTime,filters.endingTime, filters.tickCount, filters.user);
+    return "Here ya go!";
 }
 
-function getFiltering(timespan){
+function getFiltering(timespan, user){
     var startingTime;
     var endingTime;
     var niceFormat;
     var tickCount
     switch(timespan){
         case "week":
-            startingTime = moment().startOf("day").subtract(1,"weeks").toDate().getTime();
-            endingTime = moment(startingTime).add(1,"weeks").endOf("day").toDate().getTime();
+            startingTime = moment().startOf("week").toDate().getTime();
+            endingTime = moment(startingTime).endOf("week").toDate().getTime();
             niceFormat = {"interval":"day","step":7}
             break;
         case "month":
-            startingTime = moment().startOf("day").subtract(1,"months").toDate().getTime();
-            endingTime = moment(endingTime).add(1,"months").endOf("day").toDate().getTime();
+            startingTime = moment().startOf("day").toDate().getTime();
+            endingTime = moment(endingTime).endOf("month").toDate().getTime();
             niceFormat = {"interval":"week","step":4} //roughly...
             break;
         case 'mtd':
@@ -147,7 +145,7 @@ function getFiltering(timespan){
     tickCount = moment.duration(moment(endingTime).diff(moment(startingTime))).days() * 2
     if(moment().isAfter(moment().hours(12).startOf("hour"))) tickCount++;
 
-    return {"startingTime":startingTime,"endingTime":endingTime, "niceFormat":niceFormat, "tickCount": tickCount}
+    return {"startingTime":startingTime,"endingTime":endingTime, "niceFormat":niceFormat, "tickCount": tickCount, "user":user}
 }
 
 function thing(){
@@ -167,11 +165,8 @@ function Type() {
 }
 
 function CreateCommand(messageContent) {
-    if (!messageContent.startsWith(commandIdentifier)) {
-        return null;
-    }
     var pieces = messageContent.split(' ');
-    // remove commandIdentifier
+    // remove bot mention
     pieces.shift();
     var commandTypeStr = pieces[0].toLowerCase();
     if (!Number.isNaN(parseInt(commandTypeStr))) {
@@ -193,10 +188,6 @@ function CreateCommand(messageContent) {
     else {
         return null;
     }
-}
-
-function SetCommandIdentifier(BotUserId) {
-    commandIdentifier = mentionPrefix+BotUserId+'>';
 }
 
 function getHelp() {

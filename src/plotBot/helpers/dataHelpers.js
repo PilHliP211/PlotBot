@@ -3,12 +3,19 @@
  * Provides functions for retrieving data from storage.
  */
 const fs = require('fs');
-const filename = './data/plots.json';
+const dataDir = './data';
+const filename = dataDir + '/plots.json';
+const defaultDataFile = {"points":[],"channelIds":[]}
 
 /**
  * Loads the json file and returns a JSON object
  */
 function loadData() {
+
+    if(!fs.existsSync(filename)){
+        writeData(defaultDataFile);
+        return defaultDataFile;
+    }
     var plotFile = fs.readFileSync(filename, "utf8");
     return JSON.parse(plotFile);
 }
@@ -17,6 +24,9 @@ function loadData() {
  * @param {*} data the object to be serialized to a file
  */
 function writeData(data) {
+    if (!fs.existsSync(dataDir)){
+        fs.mkdirSync(dataDir);
+    }
     fs.writeFileSync(filename, JSON.stringify(data));
 }
 
@@ -30,7 +40,6 @@ function writeDataPiece(datapiece,piecename) {
     file[piecename] = datapiece;
     writeData(file);
 }
-
 
 var helperExports = {
     loadData,
